@@ -4,7 +4,7 @@
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <Product>ScanDesk</Product>
+    <Product>PrinterDesk</Product>
     <Company>Miguel</Company>
     <Copyright>© 2026 Miguel</Copyright>
     <!-- Version comes from the latest vX.Y.Z git tag (MinVer); between tags it is a pre-release

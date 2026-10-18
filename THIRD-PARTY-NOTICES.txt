@@ -1,8 +1,8 @@
-ScanDesk third-party notices
+PrinterDesk third-party notices
 ============================
 
-ScanDesk.exe includes the following third-party software. Each component is listed with its
-license. ScanDesk itself is licensed under the MIT License (see LICENSE).
+PrinterDesk.exe includes the following third-party software. Each component is listed with its
+license. PrinterDesk itself is licensed under the MIT License (see LICENSE).
 
 ================================================================================
 .NET runtime and libraries (Microsoft.Extensions.*, System.Security.Cryptography.Pkcs)

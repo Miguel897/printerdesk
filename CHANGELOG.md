@@ -1,10 +1,15 @@
 # Changelog
 
-All notable changes to ScanDesk are listed here. The format follows
+All notable changes to PrinterDesk (formerly ScanDesk) are listed here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow
 [Semantic Versioning](https://semver.org/). Each release on GitHub shows its section of this file.
 
 ## [Unreleased]
+
+### Changed
+
+- Renamed from ScanDesk to **PrinterDesk**, ahead of adding printing. The exe is now `PrinterDesk.exe`;
+  settings and unsaved pages from ScanDesk are moved over on first start.
 
 ## [1.1.0] - 2026-10-17
 

@@ -1,4 +1,4 @@
-# ScanDesk — Product Requirements Document
+# PrinterDesk — Product Requirements Document (v1: scanning)
 
 | | |
 |---|---|
@@ -9,7 +9,7 @@
 
 ## 1. Summary
 
-ScanDesk is a small Windows desktop app for scanning documents from network scanners
+PrinterDesk is a small Windows desktop app for scanning documents from network scanners
 that support **eSCL** (AirScan / Mopria). The first target device is an
 **HP ENVY 6432e** (flatbed + automatic document feeder). The user scans pages,
 checks them in a built-in preview, fixes order or removes bad pages, and saves a PDF.
@@ -115,7 +115,7 @@ Priority: **P0** = v1 must have, **P1** = v1 should have, **P2** = later.
 
 | ID | Requirement | Pri |
 |---|---|---|
-| F28 | Persist: scanner address, default source, dpi, color, paper size, output folder. Stored in `%APPDATA%\ScanDesk\settings.json`. | P0 |
+| F28 | Persist: scanner address, default source, dpi, color, paper size, output folder. Stored in `%APPDATA%\PrinterDesk\settings.json`. | P0 |
 
 ## 6. UI
 
@@ -163,10 +163,10 @@ Single main window, WPF.
 ### 7.2 Solution layout
 
 ```
-ScanDesk.sln
-├─ src/ScanDesk.Core        class library: eSCL client, discovery, document model, PDF export
-├─ src/ScanDesk.App         WPF app: views, view models, settings
-└─ tests/ScanDesk.Core.Tests
+PrinterDesk.sln
+├─ src/PrinterDesk.Core        class library: eSCL client, discovery, document model, PDF export
+├─ src/PrinterDesk.App         WPF app: views, view models, settings
+└─ tests/PrinterDesk.Core.Tests
 ```
 
 ### 7.3 Page model
@@ -197,7 +197,7 @@ All network calls are async; the UI never blocks during the ~20–30 s per page.
 
 ### 7.5 Distribution
 
-- `dotnet publish -r win-x64 --self-contained -p:PublishSingleFile=true` → one `ScanDesk.exe`
+- `dotnet publish -r win-x64 --self-contained -p:PublishSingleFile=true` → one `PrinterDesk.exe`
   (~70–100 MB, no .NET install needed) that can be copied to other PCs.
 - Optional later: MSIX or Inno Setup installer with Start-menu shortcut.
 - First run on a new PC: Windows Firewall may ask to allow mDNS; manual IP always works.
@@ -227,7 +227,7 @@ All network calls are async; the UI never blocks during the ~20–30 s per page.
 | Q2 | Default color mode for documents: Color or Grayscale? | Color (owner can change; setting persists). |
 | Q3 | Need OCR (searchable PDFs)? | v2 — Windows built-in OCR (`Windows.Media.Ocr`) or Tesseract. |
 | Q4 | Installer or just a copied `.exe`? | Single `.exe` for v1. |
-| Q5 | App name. | "ScanDesk" (working name). |
+| Q5 | App name. | "ScanDesk" (working name); renamed to "PrinterDesk" in 2026-10 (see [PRD-print.md](PRD-print.md) Q1). |
 
 ## 11. Milestones
 
@@ -250,4 +250,4 @@ All network calls are async; the UI never blocks during the ~20–30 s per page.
 | Auto-crop, blank-page removal | F21–F22 | Not started (P2). |
 | Saving | F23–F27 | Done. PDF save verified via the app; JPEG export and crash-restore implemented, not yet verified manually. |
 | Settings | F28 | Done. |
-| Distribution | §7.5 | `dotnet publish` → single 64 MB `ScanDesk.exe`, verified to start and reconnect. |
+| Distribution | §7.5 | `dotnet publish` → single 64 MB `PrinterDesk.exe`, verified to start and reconnect. |
