@@ -26,13 +26,11 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     private readonly PdfSources _pdfs = new();
     private readonly DispatcherTimer _statusTimer = new() { Interval = TimeSpan.FromSeconds(3) };
     private readonly DispatcherTimer _elapsedTimer = new() { Interval = TimeSpan.FromSeconds(1) };
-    private readonly DispatcherTimer _previewTimer = new() { Interval = TimeSpan.FromMilliseconds(400) };
 
     private EsclClient? _client;
     private ScannerCapabilities? _caps;
     private CancellationTokenSource? _scanCts;
     private DateTime _scanStarted;
-    private string? _previewFile;
     private int _preferredDpi;
     private int _connectVersion;
     private bool _isDirty;
@@ -63,18 +61,16 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         _loadingOptions = false;
 
         Print = new PrintViewModel(dialogs, _settings, SaveSettings, () => Pages.Select(p => p.Page).ToList(), _pdfs);
+        Preview = new PreviewViewModel(_pdfs, Print);
 
         Pages.CollectionChanged += OnPagesChanged;
         _statusTimer.Tick += async (_, _) => await RefreshStatusAsync();
         _elapsedTimer.Tick += (_, _) => UpdateElapsed();
-        _previewTimer.Tick += (_, _) =>
-        {
-            _previewTimer.Stop();
-            UpdatePreview();
-        };
     }
 
     public PrintViewModel Print { get; }
+
+    public PreviewViewModel Preview { get; }
 
     public ObservableCollection<DiscoveredScanner> Scanners { get; } = [];
 
@@ -142,10 +138,6 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
     [ObservableProperty]
     public partial string PageCountText { get; set; }
-
-    /// <summary>Preview PDF to show (with <c>#page=N</c>), or null for an empty preview.</summary>
-    [ObservableProperty]
-    public partial Uri? PreviewUri { get; set; }
 
     /// <summary>"Saved: file.pdf" after a save, cleared on the next edit.</summary>
     [ObservableProperty]
@@ -671,8 +663,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         SaveJpegCommand.NotifyCanExecuteChanged();
         NewDocumentCommand.NotifyCanExecuteChanged();
 
-        _previewTimer.Stop();
-        _previewTimer.Start();
+        UpdatePreview();
     }
 
     private void TrySaveSession()
@@ -713,43 +704,12 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
     // ---------------------------------------------------------------- preview
 
-    partial void OnSelectedPageChanged(PageViewModel? value) => UpdatePreviewUri();
+    partial void OnSelectedPageChanged(PageViewModel? value) => UpdatePreview();
 
     private void UpdatePreview()
     {
-        if (Pages.Count == 0)
-        {
-            _previewFile = null;
-            PreviewUri = null;
-            _session.DeletePreviewsExcept(null);
-            return;
-        }
-
-        var path = _session.NewPreviewPath();
-        try
-        {
-            PdfExporter.Export(Pages.Select(p => p.Page), path);
-        }
-        catch (Exception ex) when (ex is IOException or InvalidOperationException or PdfSharp.PdfSharpException)
-        {
-            return;
-        }
-
-        _previewFile = path;
-        UpdatePreviewUri();
-        _session.DeletePreviewsExcept(path);
-    }
-
-    private void UpdatePreviewUri()
-    {
-        if (_previewFile is null)
-        {
-            PreviewUri = null;
-            return;
-        }
-
-        var page = SelectedPage is null ? 1 : Math.Max(Pages.IndexOf(SelectedPage) + 1, 1);
-        PreviewUri = new Uri($"{new Uri(_previewFile).AbsoluteUri}#page={page}");
+        var page = SelectedPage ?? Pages.FirstOrDefault();
+        Preview.Show(page, page is null ? 0 : Pages.IndexOf(page) + 1, Pages.Count);
     }
 
     // ---------------------------------------------------------------- saving
@@ -847,10 +807,10 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     {
         _statusTimer.Stop();
         _elapsedTimer.Stop();
-        _previewTimer.Stop();
         _scanCts?.Cancel();
         _client?.Dispose();
         Print.Dispose();
+        Preview.Dispose();
         _pdfs.Dispose();
     }
 

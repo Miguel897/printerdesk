@@ -4,7 +4,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using Microsoft.Web.WebView2.Core;
 using PrinterDesk.App.Services;
 using PrinterDesk.App.ViewModels;
 using PrinterDesk.Core.Documents;
@@ -15,7 +14,6 @@ namespace PrinterDesk.App;
 public partial class MainWindow : Window
 {
     private readonly MainViewModel _vm;
-    private bool _previewReady;
     private Point _dragStart;
     private PageViewModel? _dragPage;
 
@@ -24,18 +22,13 @@ public partial class MainWindow : Window
         InitializeComponent();
         _vm = new MainViewModel(new DialogService(this), new SettingsStore(), new WorkingSession(WorkingSession.DefaultFolder));
         DataContext = _vm;
-        _vm.PropertyChanged += OnViewModelPropertyChanged;
         RestorePlacement();
         Loaded += OnLoaded;
         Closing += OnClosing;
         Closed += (_, _) => _vm.Dispose();
     }
 
-    private async void OnLoaded(object sender, RoutedEventArgs e)
-    {
-        await InitPreviewAsync();
-        await _vm.InitializeAsync();
-    }
+    private async void OnLoaded(object sender, RoutedEventArgs e) => await _vm.InitializeAsync();
 
     private void OnClosing(object? sender, CancelEventArgs e)
     {
@@ -74,42 +67,6 @@ public partial class MainWindow : Window
         (s.WindowLeft, s.WindowTop, s.WindowWidth, s.WindowHeight) = (bounds.Left, bounds.Top, bounds.Width, bounds.Height);
         s.WindowMaximized = WindowState == WindowState.Maximized;
         _vm.SaveSettings();
-    }
-
-    // ---------------------------------------------------------------- PDF preview (WebView2 = Edge PDF viewer)
-
-    private async Task InitPreviewAsync()
-    {
-        try
-        {
-            // Keep WebView2's profile out of the exe folder (it may be read-only, e.g. Program Files).
-            var dataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "PrinterDesk", "WebView2");
-            var environment = await CoreWebView2Environment.CreateAsync(userDataFolder: dataFolder);
-            await Preview.EnsureCoreWebView2Async(environment);
-            Preview.CoreWebView2.Settings.AreDevToolsEnabled = false;
-            Preview.CoreWebView2.Settings.IsStatusBarEnabled = false;
-            Preview.CoreWebView2.Settings.AreDefaultContextMenusEnabled = true;
-            _previewReady = true;
-            Navigate(_vm.PreviewUri);
-        }
-        catch (WebView2RuntimeNotFoundException)
-        {
-            PreviewPlaceholder.Text = "PDF preview is not available: the Microsoft Edge WebView2 Runtime is not installed.\n" +
-                                      "Scanning and saving still work.";
-            Preview.Visibility = Visibility.Collapsed;
-        }
-    }
-
-    private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
-    {
-        if (e.PropertyName == nameof(MainViewModel.PreviewUri))
-            Navigate(_vm.PreviewUri);
-    }
-
-    private void Navigate(Uri? uri)
-    {
-        if (_previewReady)
-            Preview.CoreWebView2.Navigate(uri?.AbsoluteUri ?? "about:blank");
     }
 
     // ---------------------------------------------------------------- files dropped on the window

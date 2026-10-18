@@ -38,6 +38,19 @@ public class LegacyDataMigrationTests
     }
 
     [Fact]
+    public void Deletes_the_old_webview2_profiles()
+    {
+        using var temp = new TempFolder();
+        foreach (var name in new[] { "ScanDesk", "PrinterDesk" })
+            Directory.CreateDirectory(Path.Combine(temp.Path, name, "WebView2", "EBWebView"));
+
+        LegacyDataMigration.Run(temp.Path, temp.Path);
+
+        Assert.False(Directory.Exists(Path.Combine(temp.Path, "ScanDesk", "WebView2")));
+        Assert.False(Directory.Exists(Path.Combine(temp.Path, "PrinterDesk", "WebView2")));
+    }
+
+    [Fact]
     public void Does_nothing_without_old_data()
     {
         using var temp = new TempFolder();

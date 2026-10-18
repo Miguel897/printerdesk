@@ -39,8 +39,7 @@ public sealed class PrintJobBuilder
         _sides = PrintLayout.Sides(pageIndexes, Math.Clamp(options.Copies, 1, Math.Min(PrintOptions.MaxCopies, Math.Max(1, printer.MaxCopies))), options.IsTwoSided);
         _color = options.Color == PrintColor.Color && printer.RasterTypes.Contains("srgb_8");
 
-        var mediaKeyword = options.Media is { } chosen && printer.Media.Contains(chosen) ? chosen : printer.MediaReady ?? "iso_a4_210x297mm";
-        Media = MediaSize.TryParse(mediaKeyword) ?? MediaSize.TryParse("iso_a4_210x297mm")!;
+        Media = PrintPreview.ResolveMedia(options, printer);
         var dpi = printer.RasterResolutions.Where(r => r <= PreferredDpi).DefaultIfEmpty(printer.RasterResolutions[0]).Max();
         Sheet = SheetLayout.For(Media, dpi, printer.Margins);
     }

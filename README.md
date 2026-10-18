@@ -5,7 +5,8 @@ Mopria) and print over **IPP** (IPP Everywhere / AirPrint / Mopria), on all-in-o
 HP ENVY 6400 series. No HP software, scanner driver or printer driver needed.
 
 - Flatbed and document feeder (all pages of a feeder batch)
-- Live PDF preview, page thumbnails, reorder (drag & drop), rotate, delete
+- Page preview and **print preview** (paper, margins, orientation, gray for black & white), page
+  thumbnails, reorder (drag & drop), rotate, delete
 - Manual two-sided scanning for feeders without duplex
 - Save as PDF (JPEGs embedded without recompression) or JPEG files
 - **Open** PDF, JPEG and PNG files (Ctrl+O or drag & drop) and mix their pages with scans
@@ -28,7 +29,6 @@ because the exe is not code-signed: click **More info → Run anyway**.
 
 - Windows 10/11 x64
 - .NET 10 SDK to build (not needed to run the published exe)
-- Microsoft Edge WebView2 Runtime for the PDF preview (preinstalled on Windows 10/11)
 
 ## Build, test, run
 
@@ -44,7 +44,8 @@ dotnet run --project src/PrinterDesk.App
 dotnet publish src/PrinterDesk.App -c Release -r win-x64 -o publish
 ```
 
-Produces `publish/PrinterDesk.exe` (~64 MB, self-contained). Copy it to any Windows PC on the same network as the scanner.
+Produces `publish/PrinterDesk.exe` (~70 MB, self-contained). Copy it to any Windows PC on the same network as
+the scanner and printer.
 
 ## Versions and releases
 
@@ -79,8 +80,8 @@ version does not match the tag.
 
 PrinterDesk has no telemetry and needs no account. It only talks to the scanner and printer on your
 local network (mDNS discovery, eSCL and IPP over HTTP) and makes no internet connections of its own.
-Your documents never leave your PC, except to the printer when you print them. The PDF preview uses
-the Microsoft Edge WebView2 Runtime that comes with Windows, which Windows keeps up to date. The only files PrinterDesk writes besides your scans are listed below.
+Your documents never leave your PC, except to the printer when you print them. The only files
+PrinterDesk writes besides your scans are listed below.
 
 ## Where data is stored
 
@@ -88,7 +89,6 @@ the Microsoft Edge WebView2 Runtime that comes with Windows, which Windows keeps
 |---|---|
 | Settings | `%APPDATA%\PrinterDesk\settings.json` |
 | Pages of the current document (scans and copies of opened files) | `%LOCALAPPDATA%\PrinterDesk\Session` |
-| PDF preview browser profile | `%LOCALAPPDATA%\PrinterDesk\WebView2` |
 | Log (7 days) | `%LOCALAPPDATA%\PrinterDesk\logs` |
 | Print job being sent (deleted when done) | `%TEMP%\PrinterDesk` |
 
@@ -97,7 +97,7 @@ the Microsoft Edge WebView2 Runtime that comes with Windows, which Windows keeps
 ```
 src/PrinterDesk.Core          eSCL and IPP clients, scan planning, discovery, document session, file import,
                               PDFium wrapper, PDF export, print layout and PWG raster, settings
-src/PrinterDesk.App           WPF UI (MVVM, WebView2 preview)
+src/PrinterDesk.App           WPF UI (MVVM), page and print preview, page rendering (WPF imaging, PDFium)
 tests/PrinterDesk.Core.Tests  xUnit tests (fixtures captured from an HP ENVY 6400)
 ```
 
@@ -105,6 +105,6 @@ tests/PrinterDesk.Core.Tests  xUnit tests (fixtures captured from an HP ENVY 640
 
 [MIT](LICENSE)
 
-PrinterDesk.exe bundles PDFium, PDFsharp, Zeroconf, System.Reactive, CommunityToolkit.Mvvm, the WebView2
-SDK and the .NET runtime. Their licenses are in [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt), also shown in
-the app under **ⓘ › Third-party notices**.
+PrinterDesk.exe bundles PDFium, PDFsharp, Zeroconf, System.Reactive, CommunityToolkit.Mvvm and the .NET
+runtime. Their licenses are in [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt), also shown in the app
+under **ⓘ › Third-party notices**.

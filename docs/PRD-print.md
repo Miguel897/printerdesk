@@ -393,3 +393,8 @@ drag & drop; copies live in the session folder (crash recovery keeps working). P
 with PDFium (own wrapper, `bblanchon.PDFium.Win32`) for thumbnails, printing and JPEG export, and copied
 as vector pages into saved PDFs. Images get a resolution that fits A4. Password-protected PDFs are
 refused (P2). The preview still uses WebView2 (next PR: own preview, F51).
+
+**Third PR (2026-10-18): own preview.** F51 done for paper, margins, orientation and gray: the preview
+pane renders the selected page with the print pipeline (PDFium/WPF imaging) at 150 dpi, on its own on
+the Scan tab and on the sheet on the Print tab, with a Fit width mode. WebView2 is removed (package,
+preview PDFs, profile folder). Not shown yet: n-up and two-sided pairs.
