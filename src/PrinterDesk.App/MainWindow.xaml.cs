@@ -1,0 +1,159 @@
+using System.ComponentModel;
+using System.IO;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
+using Microsoft.Web.WebView2.Core;
+using PrinterDesk.App.Services;
+using PrinterDesk.App.ViewModels;
+using PrinterDesk.Core.Documents;
+using PrinterDesk.Core.Settings;
+
+namespace PrinterDesk.App;
+
+public partial class MainWindow : Window
+{
+    private readonly MainViewModel _vm;
+    private bool _previewReady;
+    private Point _dragStart;
+    private PageViewModel? _dragPage;
+
+    public MainWindow()
+    {
+        InitializeComponent();
+        _vm = new MainViewModel(new DialogService(this), new SettingsStore(), new WorkingSession(WorkingSession.DefaultFolder));
+        DataContext = _vm;
+        _vm.PropertyChanged += OnViewModelPropertyChanged;
+        RestorePlacement();
+        Loaded += OnLoaded;
+        Closing += OnClosing;
+        Closed += (_, _) => _vm.Dispose();
+    }
+
+    private async void OnLoaded(object sender, RoutedEventArgs e)
+    {
+        await InitPreviewAsync();
+        await _vm.InitializeAsync();
+    }
+
+    private void OnClosing(object? sender, CancelEventArgs e)
+    {
+        e.Cancel = !_vm.ConfirmClose();
+        if (!e.Cancel)
+            SavePlacement();
+    }
+
+    // ---------------------------------------------------------------- window placement
+
+    /// <summary>Restores the saved size and position, clamped to the work area (e.g. above the taskbar at 125 %).</summary>
+    private void RestorePlacement()
+    {
+        var s = _vm.Settings;
+        var work = SystemParameters.WorkArea;
+        Width = Math.Min(s.WindowWidth, work.Width);
+        Height = Math.Min(s.WindowHeight, work.Height);
+        if (s.WindowLeft is { } left && s.WindowTop is { } top
+            && left >= SystemParameters.VirtualScreenLeft - 50 && top >= SystemParameters.VirtualScreenTop - 50
+            && left < SystemParameters.VirtualScreenLeft + SystemParameters.VirtualScreenWidth - 100
+            && top < SystemParameters.VirtualScreenTop + SystemParameters.VirtualScreenHeight - 100)
+        {
+            WindowStartupLocation = WindowStartupLocation.Manual;
+            Left = Math.Min(left, Math.Max(work.Left, work.Right - Width));
+            Top = Math.Min(top, Math.Max(work.Top, work.Bottom - Height));
+        }
+
+        if (s.WindowMaximized)
+            WindowState = WindowState.Maximized;
+    }
+
+    private void SavePlacement()
+    {
+        var s = _vm.Settings;
+        var bounds = WindowState == WindowState.Normal ? new Rect(Left, Top, Width, Height) : RestoreBounds;
+        (s.WindowLeft, s.WindowTop, s.WindowWidth, s.WindowHeight) = (bounds.Left, bounds.Top, bounds.Width, bounds.Height);
+        s.WindowMaximized = WindowState == WindowState.Maximized;
+        _vm.SaveSettings();
+    }
+
+    // ---------------------------------------------------------------- PDF preview (WebView2 = Edge PDF viewer)
+
+    private async Task InitPreviewAsync()
+    {
+        try
+        {
+            // Keep WebView2's profile out of the exe folder (it may be read-only, e.g. Program Files).
+            var dataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "PrinterDesk", "WebView2");
+            var environment = await CoreWebView2Environment.CreateAsync(userDataFolder: dataFolder);
+            await Preview.EnsureCoreWebView2Async(environment);
+            Preview.CoreWebView2.Settings.AreDevToolsEnabled = false;
+            Preview.CoreWebView2.Settings.IsStatusBarEnabled = false;
+            Preview.CoreWebView2.Settings.AreDefaultContextMenusEnabled = true;
+            _previewReady = true;
+            Navigate(_vm.PreviewUri);
+        }
+        catch (WebView2RuntimeNotFoundException)
+        {
+            PreviewPlaceholder.Text = "PDF preview is not available: the Microsoft Edge WebView2 Runtime is not installed.\n" +
+                                      "Scanning and saving still work.";
+            Preview.Visibility = Visibility.Collapsed;
+        }
+    }
+
+    private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(MainViewModel.PreviewUri))
+            Navigate(_vm.PreviewUri);
+    }
+
+    private void Navigate(Uri? uri)
+    {
+        if (_previewReady)
+            Preview.CoreWebView2.Navigate(uri?.AbsoluteUri ?? "about:blank");
+    }
+
+    // ---------------------------------------------------------------- drag & drop reordering
+
+    private void PageList_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        _dragStart = e.GetPosition(null);
+        _dragPage = ItemUnder(e.OriginalSource)?.DataContext as PageViewModel;
+    }
+
+    private void PageList_PreviewMouseMove(object sender, MouseEventArgs e)
+    {
+        if (e.LeftButton != MouseButtonState.Pressed || _dragPage is null || _vm.IsScanning)
+            return;
+
+        var delta = _dragStart - e.GetPosition(null);
+        if (Math.Abs(delta.X) < SystemParameters.MinimumHorizontalDragDistance &&
+            Math.Abs(delta.Y) < SystemParameters.MinimumVerticalDragDistance)
+            return;
+
+        var page = _dragPage;
+        _dragPage = null;
+        DragDrop.DoDragDrop(PageList, page, DragDropEffects.Move);
+    }
+
+    private void PageList_Drop(object sender, DragEventArgs e)
+    {
+        if (e.Data.GetData(typeof(PageViewModel)) is not PageViewModel page)
+            return;
+
+        var target = ItemUnder(e.OriginalSource)?.DataContext as PageViewModel;
+        var index = target is null ? _vm.Pages.Count - 1 : _vm.Pages.IndexOf(target);
+        _vm.MovePage(page, index);
+    }
+
+    private static ListBoxItem? ItemUnder(object source)
+    {
+        for (var node = source as DependencyObject; node is not null; node = VisualTreeHelper.GetParent(node))
+        {
+            if (node is ListBoxItem item)
+                return item;
+            if (node is not Visual)
+                return null;
+        }
+        return null;
+    }
+}

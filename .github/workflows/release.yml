@@ -1,4 +1,4 @@
-# Push a tag like v1.0.0 to build, test and publish ScanDesk.exe as a GitHub Release.
+# Push a tag like v1.0.0 to build, test and publish PrinterDesk.exe as a GitHub Release.
 # The release notes are that version's section of CHANGELOG.md; the run fails if it is missing.
 name: Release
 
@@ -34,18 +34,18 @@ jobs:
           Get-Content release-notes.md
 
       - name: Test
-        run: dotnet test ScanDesk.slnx -c Release
+        run: dotnet test PrinterDesk.slnx -c Release
 
       - name: Publish single-file exe
         shell: pwsh
         run: |
-          dotnet publish src/ScanDesk.App -c Release -r win-x64 -o publish
+          dotnet publish src/PrinterDesk.App -c Release -r win-x64 -o publish
           $version = "${{ github.ref_name }}".TrimStart("v")
-          $actual = (Get-Item publish/ScanDesk.exe).VersionInfo.ProductVersion
+          $actual = (Get-Item publish/PrinterDesk.exe).VersionInfo.ProductVersion
           if (-not $actual.StartsWith("$version+") -and $actual -ne $version) { throw "Exe version $actual does not match tag $version." }
 
       # Third-party action with write access: pinned to a commit; Dependabot updates it.
       - uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
         with:
-          files: publish/ScanDesk.exe
+          files: publish/PrinterDesk.exe
           body_path: release-notes.md

@@ -23,4 +23,4 @@ jobs:
 
       # CI=true makes restore use the committed packages.lock.json files (locked mode).
       - name: Test
-        run: dotnet test ScanDesk.slnx -c Release
+        run: dotnet test PrinterDesk.slnx -c Release

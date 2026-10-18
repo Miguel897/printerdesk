@@ -1,9 +1,0 @@
-<Solution>
-  <Folder Name="/src/">
-    <Project Path="src/ScanDesk.App/ScanDesk.App.csproj" />
-    <Project Path="src/ScanDesk.Core/ScanDesk.Core.csproj" />
-  </Folder>
-  <Folder Name="/tests/">
-    <Project Path="tests/ScanDesk.Core.Tests/ScanDesk.Core.Tests.csproj" />
-  </Folder>
-</Solution>

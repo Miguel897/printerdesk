@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/PrinterDesk.App/PrinterDesk.App.csproj" />
+    <Project Path="src/PrinterDesk.Core/PrinterDesk.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/PrinterDesk.Core.Tests/PrinterDesk.Core.Tests.csproj" />
+  </Folder>
+</Solution>
