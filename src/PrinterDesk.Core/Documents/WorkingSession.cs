@@ -10,7 +10,6 @@ public sealed class WorkingSession
 {
     private const string ManifestName = "session.json";
     private const string PagePrefix = "page_";
-    private const string PreviewPrefix = "preview_";
     private const string SourcePrefix = "source_";
 
     public WorkingSession(string folder)
@@ -79,23 +78,11 @@ public sealed class WorkingSession
         }
     }
 
-    /// <summary>Deletes all pages, previews and the manifest.</summary>
+    /// <summary>Deletes all pages, copied files and the manifest (and previews left by older versions).</summary>
     public void Clear()
     {
         foreach (var file in Directory.EnumerateFiles(Folder))
             TryDelete(file);
-    }
-
-    public string NewPreviewPath() => Path.Combine(Folder, $"{PreviewPrefix}{DateTime.Now:HHmmss_fff}.pdf");
-
-    /// <summary>Deletes old preview PDFs; files still open in the viewer are left for later.</summary>
-    public void DeletePreviewsExcept(string? keep)
-    {
-        foreach (var file in Directory.EnumerateFiles(Folder, PreviewPrefix + "*.pdf"))
-        {
-            if (!string.Equals(file, keep, StringComparison.OrdinalIgnoreCase))
-                TryDelete(file);
-        }
     }
 
     private static void TryDelete(string path)

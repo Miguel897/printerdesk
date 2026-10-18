@@ -10,12 +10,21 @@ published as 1.0.0 and 1.1.0.
 
 ### Added
 
+- **Print preview**: on the Print tab the preview shows each page as it will print: on the chosen paper,
+  with the printer's margins, turned to fit (Auto orientation) and in gray for black & white.
 - **Printing** (Print tab, Ctrl+P): print the scanned document on the printer of the same device over the
   network (IPP), no driver needed. Copies, page range, color or black & white, one-sided or two-sided
   (book or flip-up), orientation (landscape pages are turned to fit), paper size and quality.
 - Printer status and ink levels in the Print tab; print progress, paper or jam problems, and Cancel.
 - **Open PDF, JPEG and PNG files** (Open…, Ctrl+O, or drop files on the window): their pages are added to
   the document, can be reordered, rotated, printed and saved. PDF pages stay sharp (vector) in saved PDFs.
+
+### Changed
+
+- The preview is drawn by PrinterDesk itself instead of the Edge PDF viewer: it follows the selected page
+  right away, has a Fit width mode for checking details, and the Microsoft Edge WebView2 Runtime is no
+  longer needed. Its old browser profile folder is deleted on first start.
+- Icon-only buttons (move, rotate, delete, search) have names for screen readers.
 
 ## [0.3.0] - 2026-10-18
 

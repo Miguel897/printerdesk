@@ -316,3 +316,34 @@ internal static class PwgDecoder
         return line;
     }
 }
+
+public class PrintPreviewTests
+{
+    private static PrinterCapabilities Printer => PrinterCapabilities.Parse(IppMessage.Decode(Fixture.Bytes("printer-attributes.bin")));
+
+    [Fact]
+    public void Media_falls_back_to_the_loaded_paper_then_a4()
+    {
+        Assert.Equal("na_letter_8.5x11in", PrintPreview.ResolveMedia(new PrintOptions { Media = "na_letter_8.5x11in" }, Printer).Keyword);
+        Assert.Equal("iso_a4_210x297mm", PrintPreview.ResolveMedia(new PrintOptions { Media = "iso_a3_297x420mm" }, Printer).Keyword);
+        Assert.Equal("iso_a3_297x420mm", PrintPreview.ResolveMedia(new PrintOptions { Media = "iso_a3_297x420mm" }, null).Keyword);
+        Assert.Equal("iso_a4_210x297mm", PrintPreview.ResolveMedia(new PrintOptions(), null).Keyword);
+    }
+
+    [Fact]
+    public void Preview_sheet_uses_printer_margins_only_when_connected()
+    {
+        Assert.Equal(17, PrintPreview.Sheet(new PrintOptions(), Printer, 150).MarginLeft);
+        Assert.Equal(0, PrintPreview.Sheet(new PrintOptions(), null, 150).MarginLeft);
+    }
+
+    [Fact]
+    public void Page_only_preview_scales_to_the_preview_resolution_and_turns()
+    {
+        // A4 scan at 300 dpi shown at 150 dpi; a PDF page (72 "dpi") is enlarged to 150 dpi.
+        Assert.Equal(new PagePlacement(0, 0, 0, 1240, 1754), PrintPreview.PageOnly(2480, 3508, 300, 0, 150, 2400));
+        Assert.Equal(new PagePlacement(90, 0, 0, 1754, 1240), PrintPreview.PageOnly(595, 842, 72, 90, 150, 2400));
+        // Huge images are capped on their long side.
+        Assert.Equal(2400, PrintPreview.PageOnly(10000, 4000, 100, 0, 150, 2400).Width);
+    }
+}

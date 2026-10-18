@@ -3,7 +3,7 @@ namespace PrinterDesk.Core.Settings;
 /// <summary>
 /// One-time move of user data from the app's former name (ScanDesk): settings from
 /// <c>%APPDATA%\ScanDesk</c> and unsaved pages from <c>%LOCALAPPDATA%\ScanDesk\Session</c>.
-/// Old logs and the WebView2 profile are left behind; they are recreated as needed.
+/// Old logs are left behind. Browser profiles of the former WebView2 preview (tens of MB) are deleted.
 /// </summary>
 public static class LegacyDataMigration
 {
@@ -19,6 +19,23 @@ public static class LegacyDataMigration
     {
         MoveIfNew(Path.Combine(roamingRoot, OldName, "settings.json"), Path.Combine(roamingRoot, NewName, "settings.json"), isFolder: false);
         MoveIfNew(Path.Combine(localRoot, OldName, "Session"), Path.Combine(localRoot, NewName, "Session"), isFolder: true);
+        foreach (var name in new[] { OldName, NewName })
+            DeleteFolder(Path.Combine(localRoot, name, "WebView2"));
+    }
+
+    private static void DeleteFolder(string folder)
+    {
+        if (!Directory.Exists(folder))
+            return;
+        try
+        {
+            Directory.Delete(folder, recursive: true);
+            Log.Info($"Deleted {folder}");
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            Log.Error($"Could not delete {folder}", ex);
+        }
     }
 
     private static void MoveIfNew(string source, string target, bool isFolder)

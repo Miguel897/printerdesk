@@ -109,6 +109,15 @@ public sealed partial class PrintViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     public partial string SummaryText { get; set; }
 
+    /// <summary>Raised when an option or the printer changes what a page looks like when printed.</summary>
+    public event EventHandler? OptionsChanged;
+
+    /// <summary>The current options, for the print preview.</summary>
+    public PrintOptions PreviewOptions => CurrentOptions;
+
+    /// <summary>The connected printer, or null.</summary>
+    public PrinterCapabilities? Capabilities => _caps;
+
     private PrintOptions CurrentOptions => new()
     {
         Copies = Copies,
@@ -153,6 +162,7 @@ public sealed partial class PrintViewModel : ObservableObject, IDisposable
             ShowStatus(caps.Status);
             IsAvailable = true;
             _statusTimer.Start();
+            OptionsChanged?.Invoke(this, EventArgs.Empty);
         }
         catch (IppException ex)
         {
@@ -174,6 +184,7 @@ public sealed partial class PrintViewModel : ObservableObject, IDisposable
         IsAvailable = false;
         InkText = "";
         IsInkLow = false;
+        OptionsChanged?.Invoke(this, EventArgs.Empty);
     }
 
     /// <summary>Offers only what the printer supports, keeping the saved choices when possible.</summary>
@@ -264,6 +275,7 @@ public sealed partial class PrintViewModel : ObservableObject, IDisposable
     private void SaveOptions()
     {
         UpdateSummary();
+        OptionsChanged?.Invoke(this, EventArgs.Empty);
         if (_loadingOptions)
             return;
         _settings.Print = CurrentOptions with { Copies = 1, PageRange = "" };
