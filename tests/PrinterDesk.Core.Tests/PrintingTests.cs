@@ -192,7 +192,7 @@ public class PrintJobBuilderTests
 {
     private static PrinterCapabilities Printer => PrinterCapabilities.Parse(IppMessage.Decode(Fixture.Bytes("printer-attributes.bin")));
 
-    private static readonly ScanPage[] Pages =
+    private static readonly DocumentPage[] Pages =
     [
         new() { FilePath = "p1", Dpi = 150 },
         new() { FilePath = "p2", Dpi = 150 },
@@ -243,9 +243,9 @@ public class PrintJobBuilderTests
     {
         public List<(string Page, PagePlacement Placement)> Rendered { get; } = [];
 
-        public (int Width, int Height) GetPixelSize(ScanPage page) => (1240, 1754);
+        public (int Width, int Height) GetPixelSize(DocumentPage page) => (1240, 1754);
 
-        public void Render(ScanPage page, PagePlacement placement, Span<byte> sheet, int sheetWidth, bool color)
+        public void Render(DocumentPage page, PagePlacement placement, Span<byte> sheet, int sheetWidth, bool color)
         {
             Rendered.Add((page.FilePath, placement));
             var bpp = color ? 3 : 1;

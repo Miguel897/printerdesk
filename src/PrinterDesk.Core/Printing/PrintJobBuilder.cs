@@ -6,13 +6,13 @@ namespace PrinterDesk.Core.Printing;
 /// <summary>Draws page images into sheet pixel buffers. Implemented with WPF imaging in the app.</summary>
 public interface IPageRasterizer
 {
-    (int Width, int Height) GetPixelSize(ScanPage page);
+    (int Width, int Height) GetPixelSize(DocumentPage page);
 
     /// <summary>
     /// Draws <paramref name="page"/> at <paramref name="placement"/> into <paramref name="sheet"/>, which is
     /// white, <paramref name="sheetWidth"/> pixels wide, 3 bytes (RGB) or 1 byte (gray) per pixel.
     /// </summary>
-    void Render(ScanPage page, PagePlacement placement, Span<byte> sheet, int sheetWidth, bool color);
+    void Render(DocumentPage page, PagePlacement placement, Span<byte> sheet, int sheetWidth, bool color);
 }
 
 /// <summary>Turns the document pages and print options into a PWG raster job for one printer.</summary>
@@ -21,14 +21,14 @@ public sealed class PrintJobBuilder
     /// <summary>Scans are 75–300 dpi, so higher print resolutions would only make the job larger.</summary>
     private const int PreferredDpi = 300;
 
-    private readonly IReadOnlyList<ScanPage> _pages;
+    private readonly IReadOnlyList<DocumentPage> _pages;
     private readonly IReadOnlyList<int?> _sides;
     private readonly PrintOptions _options;
     private readonly PrinterCapabilities _printer;
     private readonly bool _color;
 
     /// <param name="pageIndexes">0-based pages in print order (see <see cref="PageRange"/>).</param>
-    public PrintJobBuilder(IReadOnlyList<ScanPage> pages, IReadOnlyList<int> pageIndexes, PrintOptions options, PrinterCapabilities printer)
+    public PrintJobBuilder(IReadOnlyList<DocumentPage> pages, IReadOnlyList<int> pageIndexes, PrintOptions options, PrinterCapabilities printer)
     {
         if (!printer.SupportsPwgRaster)
             throw new IppException("This printer does not accept PWG raster jobs, which PrinterDesk needs.");

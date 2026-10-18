@@ -10,12 +10,14 @@
         d:DataContext="{d:DesignInstance vm:MainViewModel}"
         Title="PrinterDesk" Height="780" Width="1240" MinWidth="960" MinHeight="580"
         WindowStartupLocation="CenterScreen"
-        FontFamily="Segoe UI" FontSize="13">
+        FontFamily="Segoe UI" FontSize="13"
+        AllowDrop="True" DragOver="Window_DragOver" Drop="Window_Drop">
 
     <Window.InputBindings>
         <KeyBinding Modifiers="Ctrl" Key="S" Command="{Binding SavePdfCommand}" />
         <KeyBinding Key="F5" Command="{Binding ScanCommand}" />
         <KeyBinding Modifiers="Ctrl" Key="P" Command="{Binding Print.PrintCommand}" />
+        <KeyBinding Modifiers="Ctrl" Key="O" Command="{Binding OpenFilesCommand}" />
     </Window.InputBindings>
 
     <Window.Resources>
@@ -150,6 +152,12 @@
                     <StackPanel Orientation="Horizontal">
                         <TextBlock FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Text="&#xE8A5;" VerticalAlignment="Center" Margin="0,0,6,0" />
                         <TextBlock Text="New" />
+                    </StackPanel>
+                </Button>
+                <Button DockPanel.Dock="Left" Margin="8,0,0,0" Command="{Binding OpenFilesCommand}" ToolTip="Add pages from PDF, JPEG or PNG files (Ctrl+O). You can also drop files on the window.">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Text="&#xE8E5;" VerticalAlignment="Center" Margin="0,0,6,0" />
+                        <TextBlock Text="Open…" />
                     </StackPanel>
                 </Button>
 
@@ -324,7 +332,7 @@
                     </StackPanel>
 
                     <Grid>
-                        <TextBlock Text="No pages yet.&#x0a;Click Scan to start." TextAlignment="Center" Foreground="{StaticResource Muted}"
+                        <TextBlock Text="No pages yet.&#x0a;Scan, or open or drop&#x0a;PDF and image files." TextAlignment="Center" Foreground="{StaticResource Muted}"
                                    HorizontalAlignment="Center" VerticalAlignment="Center" />
                         <ListBox x:Name="PageList" ItemsSource="{Binding Pages}" SelectedItem="{Binding SelectedPage}"
                                  SelectionMode="Extended" AllowDrop="True" Background="#FAFAFA" BorderThickness="0"

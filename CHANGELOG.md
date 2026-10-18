@@ -14,6 +14,8 @@ published as 1.0.0 and 1.1.0.
   network (IPP), no driver needed. Copies, page range, color or black & white, one-sided or two-sided
   (book or flip-up), orientation (landscape pages are turned to fit), paper size and quality.
 - Printer status and ink levels in the Print tab; print progress, paper or jam problems, and Cancel.
+- **Open PDF, JPEG and PNG files** (Open…, Ctrl+O, or drop files on the window): their pages are added to
+  the document, can be reordered, rotated, printed and saved. PDF pages stay sharp (vector) in saved PDFs.
 
 ## [0.3.0] - 2026-10-18
 

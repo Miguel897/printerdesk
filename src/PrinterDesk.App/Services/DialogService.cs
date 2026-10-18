@@ -29,5 +29,11 @@ public sealed class DialogService(Window owner) : IDialogService
         return dialog.ShowDialog(owner) == true ? dialog.FileName : null;
     }
 
+    public IReadOnlyList<string>? AskOpenPaths(string filter)
+    {
+        var dialog = new OpenFileDialog { Filter = filter, Multiselect = true, Title = "Open PDF or images" };
+        return dialog.ShowDialog(owner) == true ? dialog.FileNames : null;
+    }
+
     public void ShowAbout() => new AboutWindow { Owner = owner }.ShowDialog();
 }

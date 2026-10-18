@@ -112,6 +112,24 @@ public partial class MainWindow : Window
             Preview.CoreWebView2.Navigate(uri?.AbsoluteUri ?? "about:blank");
     }
 
+    // ---------------------------------------------------------------- files dropped on the window
+
+    private void Window_DragOver(object sender, DragEventArgs e)
+    {
+        if (!e.Data.GetDataPresent(DataFormats.FileDrop))
+            return;
+        e.Effects = _vm.IsScanning ? DragDropEffects.None : DragDropEffects.Copy;
+        e.Handled = true;
+    }
+
+    private async void Window_Drop(object sender, DragEventArgs e)
+    {
+        if (e.Data.GetData(DataFormats.FileDrop) is not string[] files)
+            return;
+        e.Handled = true;
+        await _vm.ImportFilesAsync(files);
+    }
+
     // ---------------------------------------------------------------- drag & drop reordering
 
     private void PageList_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)

@@ -11,6 +11,7 @@ public sealed class WorkingSession
     private const string ManifestName = "session.json";
     private const string PagePrefix = "page_";
     private const string PreviewPrefix = "preview_";
+    private const string SourcePrefix = "source_";
 
     public WorkingSession(string folder)
     {
@@ -23,25 +24,38 @@ public sealed class WorkingSession
 
     public string Folder { get; }
 
-    public ScanPage AddPage(byte[] jpeg, int dpi)
+    public DocumentPage AddPage(byte[] jpeg, int dpi)
     {
         var path = Path.Combine(Folder, $"{PagePrefix}{DateTime.Now:yyyyMMdd_HHmmss_fff}_{Guid.NewGuid():N}.jpg");
         File.WriteAllBytes(path, jpeg);
-        return new ScanPage { FilePath = path, Dpi = dpi };
+        return new DocumentPage { FilePath = path, Dpi = dpi };
     }
 
-    public void DeletePage(ScanPage page) => TryDelete(page.FilePath);
-
-    public void Save(IEnumerable<ScanPage> pages, bool isDirty)
+    /// <summary>Copies an opened image or PDF into the session, so the document does not depend on the original file.</summary>
+    public string AddSourceFile(string path)
     {
-        var manifest = new Manifest(isDirty, pages.Select(p => new ManifestPage(Path.GetFileName(p.FilePath), p.Dpi, p.Rotation)).ToList());
+        var copy = Path.Combine(Folder, $"{SourcePrefix}{Guid.NewGuid():N}{Path.GetExtension(path).ToLowerInvariant()}");
+        File.Copy(path, copy);
+        return copy;
+    }
+
+    /// <summary>A PDF is shared by its pages, so it stays until <see cref="Clear"/>.</summary>
+    public void DeletePage(DocumentPage page)
+    {
+        if (!page.IsPdf)
+            TryDelete(page.FilePath);
+    }
+
+    public void Save(IEnumerable<DocumentPage> pages, bool isDirty)
+    {
+        var manifest = new Manifest(isDirty, pages.Select(p => new ManifestPage(Path.GetFileName(p.FilePath), p.Dpi, p.Rotation, p.PdfPageIndex)).ToList());
         var temp = Path.Combine(Folder, ManifestName + ".tmp");
         File.WriteAllText(temp, JsonSerializer.Serialize(manifest));
         File.Move(temp, Path.Combine(Folder, ManifestName), overwrite: true);
     }
 
     /// <summary>Pages left from a previous run (missing files are skipped).</summary>
-    public (IReadOnlyList<ScanPage> Pages, bool IsDirty) Load()
+    public (IReadOnlyList<DocumentPage> Pages, bool IsDirty) Load()
     {
         var path = Path.Combine(Folder, ManifestName);
         if (!File.Exists(path))
@@ -54,7 +68,7 @@ public sealed class WorkingSession
                 return ([], false);
 
             var pages = manifest.Pages
-                .Select(p => new ScanPage { FilePath = Path.Combine(Folder, p.File), Dpi = p.Dpi, Rotation = p.Rotation })
+                .Select(p => new DocumentPage { FilePath = Path.Combine(Folder, p.File), Dpi = p.Dpi, Rotation = p.Rotation, PdfPageIndex = p.PdfPage })
                 .Where(p => File.Exists(p.FilePath))
                 .ToList();
             return (pages, manifest.IsDirty);
@@ -93,5 +107,5 @@ public sealed class WorkingSession
 
     private sealed record Manifest(bool IsDirty, List<ManifestPage> Pages);
 
-    private sealed record ManifestPage(string File, int Dpi, int Rotation);
+    private sealed record ManifestPage(string File, int Dpi, int Rotation, int? PdfPage = null);
 }

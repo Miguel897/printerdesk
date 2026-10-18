@@ -9,6 +9,7 @@
     <GlobalPackageReference Include="MinVer" Version="8.0.0" />
   </ItemGroup>
   <ItemGroup>
+    <PackageVersion Include="bblanchon.PDFium.Win32" Version="157.0.8100" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.4258.31" />
     <PackageVersion Include="PDFsharp" Version="6.2.4" />
