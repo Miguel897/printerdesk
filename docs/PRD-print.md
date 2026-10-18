@@ -387,3 +387,9 @@ the user and turned back by Auto) printed on one sheet with both sides upright.
 | Job | F52–F55 | Done: Validate-Job, Create-Job + Send-Document, progress, Cancel-Job, paper/jam shown while waiting. |
 | Preview of print effects | F51 | Not started (needs the own preview, M6). |
 | Raster | §7.1 | PWG raster sRGB/sGray 8-bit at 300 dpi, written to a temp file and then sent. PCLm and streaming: later. |
+
+**Second PR (2026-10-18): open files.** F36–F38 done: PDF, JPEG and PNG files open with Open…, Ctrl+O or
+drag & drop; copies live in the session folder (crash recovery keeps working). PDF pages are rendered
+with PDFium (own wrapper, `bblanchon.PDFium.Win32`) for thumbnails, printing and JPEG export, and copied
+as vector pages into saved PDFs. Images get a resolution that fits A4. Password-protected PDFs are
+refused (P2). The preview still uses WebView2 (next PR: own preview, F51).

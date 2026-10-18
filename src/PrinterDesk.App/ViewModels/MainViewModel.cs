@@ -23,6 +23,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     private readonly SettingsStore _settingsStore;
     private readonly AppSettings _settings;
     private readonly WorkingSession _session;
+    private readonly PdfSources _pdfs = new();
     private readonly DispatcherTimer _statusTimer = new() { Interval = TimeSpan.FromSeconds(3) };
     private readonly DispatcherTimer _elapsedTimer = new() { Interval = TimeSpan.FromSeconds(1) };
     private readonly DispatcherTimer _previewTimer = new() { Interval = TimeSpan.FromMilliseconds(400) };
@@ -61,7 +62,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         SelectedDpi = _preferredDpi;
         _loadingOptions = false;
 
-        Print = new PrintViewModel(dialogs, _settings, SaveSettings, () => Pages.Select(p => p.Page).ToList());
+        Print = new PrintViewModel(dialogs, _settings, SaveSettings, () => Pages.Select(p => p.Page).ToList(), _pdfs);
 
         Pages.CollectionChanged += OnPagesChanged;
         _statusTimer.Tick += async (_, _) => await RefreshStatusAsync();
@@ -122,7 +123,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(ScanCommand), nameof(ScanDuplexCommand), nameof(CancelScanCommand),
         nameof(MoveUpCommand), nameof(MoveDownCommand), nameof(RotateLeftCommand), nameof(RotateRightCommand),
-        nameof(DeletePagesCommand), nameof(NewDocumentCommand), nameof(SavePdfCommand), nameof(SaveJpegCommand))]
+        nameof(DeletePagesCommand), nameof(NewDocumentCommand), nameof(SavePdfCommand), nameof(SaveJpegCommand), nameof(OpenFilesCommand))]
     public partial bool IsScanning { get; set; }
 
     [ObservableProperty]
@@ -479,7 +480,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
         await foreach (var jpeg in client.ScanAsync(request, ct))
         {
-            var page = new PageViewModel(_session.AddPage(jpeg, request.Dpi));
+            var page = new PageViewModel(_session.AddPage(jpeg, request.Dpi), _pdfs);
             Pages.Add(page);
             scanned.Add(page);
             SelectedPage = page;
@@ -580,6 +581,48 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         SelectedPage = Pages.Count == 0 ? null : Pages[Math.Clamp(index, 0, Pages.Count - 1)];
     }
 
+    private bool CanOpen() => !IsScanning;
+
+    [RelayCommand(CanExecute = nameof(CanOpen))]
+    private async Task OpenFilesAsync()
+    {
+        if (_dialogs.AskOpenPaths(DocumentImporter.DialogFilter) is { } paths)
+            await ImportFilesAsync(paths);
+    }
+
+    /// <summary>Adds the pages of PDF, JPEG and PNG files at the end (Open… and files dropped on the window).</summary>
+    public async Task ImportFilesAsync(IReadOnlyList<string> paths)
+    {
+        if (IsScanning)
+            return;
+
+        var errors = new List<string>();
+        var added = 0;
+        foreach (var path in paths)
+        {
+            try
+            {
+                foreach (var page in await DocumentImporter.ImportAsync(path, _session, _pdfs))
+                {
+                    var item = new PageViewModel(page, _pdfs);
+                    Pages.Add(item);
+                    SelectedPage = item;
+                    added++;
+                }
+            }
+            catch (ImportException ex)
+            {
+                Log.Error("Import failed", ex);
+                errors.Add(ex.Message);
+            }
+        }
+
+        if (added > 0)
+            ProgressText = $"Added {Plural(added, "page")}.";
+        if (errors.Count > 0)
+            _dialogs.ShowError(string.Join("\n", errors));
+    }
+
     /// <summary>Drag &amp; drop reorder from the view.</summary>
     public void MovePage(PageViewModel page, int newIndex)
     {
@@ -599,6 +642,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             return;
 
         Pages.Clear();
+        _pdfs.Clear();
         _session.Clear();
         _isDirty = false;
         SavedMessage = null;
@@ -653,7 +697,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             {
                 try
                 {
-                    Pages.Add(new PageViewModel(page));
+                    Pages.Add(new PageViewModel(page, _pdfs));
                 }
                 catch (Exception ex) when (ex is IOException or NotSupportedException or InvalidOperationException)
                 {
@@ -686,7 +730,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         {
             PdfExporter.Export(Pages.Select(p => p.Page), path);
         }
-        catch (Exception ex) when (ex is IOException or InvalidOperationException)
+        catch (Exception ex) when (ex is IOException or InvalidOperationException or PdfSharp.PdfSharpException)
         {
             return;
         }
@@ -722,7 +766,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     [RelayCommand(CanExecute = nameof(CanSave))]
     private void SaveJpeg() => Save("JPEG image (*.jpg)|*.jpg", ".jpg", path =>
     {
-        var files = JpegExporter.Export(Pages.Select(p => p.Page).ToList(), path);
+        var files = JpegExporter.Export(Pages.Select(p => p.Page).ToList(), path, _pdfs);
         return files.Count == 1 ? $"Saved {Path.GetFileName(files[0])}" : $"Saved {files.Count} JPEG files";
     });
 
@@ -747,7 +791,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         {
             message = export(path);
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException)
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException or PdfSharp.PdfSharpException or Core.Pdfium.PdfOpenException)
         {
             _dialogs.ShowError($"Could not save the file.\n\n{ex.Message}");
             return;
@@ -807,6 +851,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         _scanCts?.Cancel();
         _client?.Dispose();
         Print.Dispose();
+        _pdfs.Dispose();
     }
 
     private static string Plural(int count, string word) => count == 1 ? $"1 {word}" : $"{count} {word}s";

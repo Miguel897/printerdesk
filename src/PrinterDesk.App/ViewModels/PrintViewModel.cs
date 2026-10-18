@@ -18,7 +18,8 @@ public sealed partial class PrintViewModel : ObservableObject, IDisposable
     private readonly IDialogService _dialogs;
     private readonly AppSettings _settings;
     private readonly Action _saveSettings;
-    private readonly Func<IReadOnlyList<ScanPage>> _pages;
+    private readonly Func<IReadOnlyList<DocumentPage>> _pages;
+    private readonly PdfSources _pdfs;
     private readonly DispatcherTimer _statusTimer = new() { Interval = TimeSpan.FromSeconds(10) };
 
     private IppClient? _client;
@@ -28,12 +29,13 @@ public sealed partial class PrintViewModel : ObservableObject, IDisposable
     private int _pageCount;
     private bool _loadingOptions;
 
-    public PrintViewModel(IDialogService dialogs, AppSettings settings, Action saveSettings, Func<IReadOnlyList<ScanPage>> pages)
+    public PrintViewModel(IDialogService dialogs, AppSettings settings, Action saveSettings, Func<IReadOnlyList<DocumentPage>> pages, PdfSources pdfs)
     {
         _dialogs = dialogs;
         _settings = settings;
         _saveSettings = saveSettings;
         _pages = pages;
+        _pdfs = pdfs;
 
         PrinterStatusText = "Connect to a scanner to find its printer.";
         InkText = "";
@@ -326,7 +328,7 @@ public sealed partial class PrintViewModel : ObservableObject, IDisposable
             await Task.Run(() =>
             {
                 using var file = File.Create(temp);
-                builder.Write(file, new PageRasterizer(), prepared, ct);
+                builder.Write(file, new PageRasterizer(_pdfs), prepared, ct);
             }, ct);
 
             jobId = await client.CreateJobAsync(builder.Ticket, ct);
@@ -345,7 +347,8 @@ public sealed partial class PrintViewModel : ObservableObject, IDisposable
                 await client.CancelJobAsync(id);
             ProgressText = "Printing cancelled.";
         }
-        catch (Exception ex) when (ex is IppException or IOException or UnauthorizedAccessException or NotSupportedException or FormatException)
+        catch (Exception ex) when (ex is IppException or IOException or UnauthorizedAccessException or NotSupportedException
+                                       or FormatException or InvalidOperationException or Core.Pdfium.PdfOpenException)
         {
             if (jobId is { } id)
                 await client.CancelJobAsync(id);

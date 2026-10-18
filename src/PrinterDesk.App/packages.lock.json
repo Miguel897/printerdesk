@@ -42,8 +42,15 @@
         "type": "Project",
         "dependencies": {
           "PDFsharp": "[6.2.4, )",
-          "Zeroconf": "[3.7.16, )"
+          "Zeroconf": "[3.7.16, )",
+          "bblanchon.PDFium.Win32": "[157.0.8100, )"
         }
+      },
+      "bblanchon.PDFium.Win32": {
+        "type": "CentralTransitive",
+        "requested": "[157.0.8100, )",
+        "resolved": "157.0.8100",
+        "contentHash": "OeimMc5Zn7XFuiczK1/C88Xfe3Ney4fxIxnhKfO44TVIvMhNqEbkbrRYaFGS5SMveaw3uDG0lewgV9qICZjpAQ=="
       },
       "PDFsharp": {
         "type": "CentralTransitive",
@@ -70,6 +77,12 @@
         "requested": "[1.0.4258.31, )",
         "resolved": "1.0.4258.31",
         "contentHash": "sHVZ2MQrHT1J3q5/6csn0fIP27rzpTO/RRC+wPQDrZheB7T4t2n+vVbY6SdCKr4WRV9s/gmBM3PPMWWJtoDzMg=="
+      },
+      "bblanchon.PDFium.Win32": {
+        "type": "CentralTransitive",
+        "requested": "[157.0.8100, )",
+        "resolved": "157.0.8100",
+        "contentHash": "OeimMc5Zn7XFuiczK1/C88Xfe3Ney4fxIxnhKfO44TVIvMhNqEbkbrRYaFGS5SMveaw3uDG0lewgV9qICZjpAQ=="
       }
     }
   }

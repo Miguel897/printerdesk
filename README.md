@@ -8,6 +8,7 @@ HP ENVY 6400 series. No HP software, scanner driver or printer driver needed.
 - Live PDF preview, page thumbnails, reorder (drag & drop), rotate, delete
 - Manual two-sided scanning for feeders without duplex
 - Save as PDF (JPEGs embedded without recompression) or JPEG files
+- **Open** PDF, JPEG and PNG files (Ctrl+O or drag & drop) and mix their pages with scans
 - **Print** the document (Ctrl+P): color or black & white, two-sided, orientation, paper size, quality,
   copies and page range; printer status and ink levels
 - Unsaved pages survive a crash or close and are offered on the next start
@@ -86,7 +87,7 @@ the Microsoft Edge WebView2 Runtime that comes with Windows, which Windows keeps
 | What | Where |
 |---|---|
 | Settings | `%APPDATA%\PrinterDesk\settings.json` |
-| Pages of the current document | `%LOCALAPPDATA%\PrinterDesk\Session` |
+| Pages of the current document (scans and copies of opened files) | `%LOCALAPPDATA%\PrinterDesk\Session` |
 | PDF preview browser profile | `%LOCALAPPDATA%\PrinterDesk\WebView2` |
 | Log (7 days) | `%LOCALAPPDATA%\PrinterDesk\logs` |
 | Print job being sent (deleted when done) | `%TEMP%\PrinterDesk` |
@@ -94,7 +95,8 @@ the Microsoft Edge WebView2 Runtime that comes with Windows, which Windows keeps
 ## Project layout
 
 ```
-src/PrinterDesk.Core          eSCL client, scan planning, discovery, document session, PDF export, settings
+src/PrinterDesk.Core          eSCL and IPP clients, scan planning, discovery, document session, file import,
+                              PDFium wrapper, PDF export, print layout and PWG raster, settings
 src/PrinterDesk.App           WPF UI (MVVM, WebView2 preview)
 tests/PrinterDesk.Core.Tests  xUnit tests (fixtures captured from an HP ENVY 6400)
 ```
@@ -103,6 +105,6 @@ tests/PrinterDesk.Core.Tests  xUnit tests (fixtures captured from an HP ENVY 640
 
 [MIT](LICENSE)
 
-PrinterDesk.exe bundles PDFsharp, Zeroconf, System.Reactive, CommunityToolkit.Mvvm, the WebView2 SDK and the
-.NET runtime. Their licenses are in [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt), also shown in
+PrinterDesk.exe bundles PDFium, PDFsharp, Zeroconf, System.Reactive, CommunityToolkit.Mvvm, the WebView2
+SDK and the .NET runtime. Their licenses are in [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt), also shown in
 the app under **ⓘ › Third-party notices**.

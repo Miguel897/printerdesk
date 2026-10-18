@@ -11,5 +11,8 @@ public interface IDialogService
     /// <summary>Returns the chosen path, or null if the user cancelled.</summary>
     string? AskSavePath(string folder, string fileName, string filter);
 
+    /// <summary>Returns the chosen files, or null if the user cancelled.</summary>
+    IReadOnlyList<string>? AskOpenPaths(string filter);
+
     void ShowAbout();
 }

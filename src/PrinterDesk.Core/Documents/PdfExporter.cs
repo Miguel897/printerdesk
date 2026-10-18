@@ -1,14 +1,19 @@
 using PdfSharp.Drawing;
 using PdfSharp.Pdf;
+using PdfSharp.Pdf.IO;
 
 namespace PrinterDesk.Core.Documents;
 
-/// <summary>Builds a PDF with one page per scan. JPEGs are embedded as is (no recompression).</summary>
+/// <summary>
+/// Builds a PDF with one page per document page. Scanned JPEGs are embedded as is (no recompression);
+/// pages of opened PDFs are copied as they are (vector text and graphics stay sharp).
+/// </summary>
 public static class PdfExporter
 {
-    public static void Export(IEnumerable<ScanPage> pages, string path)
+    public static void Export(IEnumerable<DocumentPage> pages, string path)
     {
         var images = new List<XImage>();
+        var sources = new Dictionary<string, PdfDocument>(StringComparer.OrdinalIgnoreCase);
         try
         {
             using var document = new PdfDocument();
@@ -16,6 +21,15 @@ public static class PdfExporter
 
             foreach (var page in pages)
             {
+                if (page.PdfPageIndex is { } index)
+                {
+                    if (!sources.TryGetValue(page.FilePath, out var source))
+                        sources[page.FilePath] = source = PdfReader.Open(page.FilePath, PdfDocumentOpenMode.Import);
+                    var imported = document.AddPage(source.Pages[index]);
+                    imported.Rotate = ((imported.Rotate + page.Rotation) % 360 + 360) % 360;
+                    continue;
+                }
+
                 var image = XImage.FromFile(page.FilePath);
                 images.Add(image);
 
@@ -40,6 +54,8 @@ public static class PdfExporter
         {
             foreach (var image in images)
                 image.Dispose();
+            foreach (var source in sources.Values)
+                source.Dispose();
         }
     }
 }
