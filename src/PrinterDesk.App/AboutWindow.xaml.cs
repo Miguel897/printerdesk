@@ -17,7 +17,7 @@ public partial class AboutWindow : Window
             "Free software under the MIT License.";
     }
 
-    /// <summary>"1.1.0+78fcba9d9b…" (informational version with commit) → "1.1.0 (78fcba9)".</summary>
+    /// <summary>"0.3.0+78fcba9d9b…" (informational version with commit) → "0.3.0 (78fcba9)".</summary>
     private static string DisplayVersion(Assembly assembly)
     {
         var version = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "?";

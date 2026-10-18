@@ -8,7 +8,7 @@
     <Company>Miguel</Company>
     <Copyright>© 2026 Miguel</Copyright>
     <!-- Version comes from the latest vX.Y.Z git tag (MinVer); between tags it is a pre-release
-         such as 1.0.1-alpha.0.3. Needs full history: checkout with fetch-depth 0 in workflows. -->
+         such as 0.3.1-alpha.0.3. Needs full history: checkout with fetch-depth 0 in workflows. -->
     <MinVerTagPrefix>v</MinVerTagPrefix>
     <!-- Exact package versions recorded in packages.lock.json; CI restores in locked mode. -->
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>

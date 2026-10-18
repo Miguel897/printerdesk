@@ -1,4 +1,4 @@
-# Push a tag like v1.0.0 to build, test and publish PrinterDesk.exe as a GitHub Release.
+# Push a tag like v0.3.0 to build, test and publish PrinterDesk.exe as a GitHub Release.
 # The release notes are that version's section of CHANGELOG.md; the run fails if it is missing.
 name: Release
 
