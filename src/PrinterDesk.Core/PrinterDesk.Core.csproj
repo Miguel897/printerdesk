@@ -9,4 +9,8 @@
     <PackageReference Include="Zeroconf" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="PrinterDesk.Core.Tests" />
+  </ItemGroup>
+
 </Project>

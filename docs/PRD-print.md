@@ -372,3 +372,18 @@ B&W only once (B&W may come out faint; that is the cartridge, not the app).
 | Page range `2-3`, 2 copies collated | 2× pages 2,3 in order |
 | Cancel after page 1 | printer stops, job state `canceled` |
 | Remove paper mid-job | status shows "out of paper", job resumes after reloading |
+
+## 13. Implementation status (2026-10-18)
+
+First printing PR: M5 (IPP core) plus the essential part of M7 (Print tab). Verified on the HP ENVY
+6432e: a 2-page color job, two-sided long edge, built by the app's own pipeline (page 2 rotated by
+the user and turned back by Auto) printed on one sheet with both sides upright.
+
+| Area | Requirements | Status |
+|---|---|---|
+| Printer connection | F31–F33 | Done: the printer is looked up on the scanner's host (IPP, port 631); status, problems and ink levels shown. mDNS `_ipp._tcp` discovery (F30) not yet. |
+| What to print | F35 | Done (scanned document). Open PDF/images, drag & drop, Copy (F36–F40): next PRs. |
+| Print options | F41–F47 | Done: copies (collated by the app), page range, color/B&W, sides, orientation, paper, quality. Paper type, borderless, n-up, presets (F48–F50): later. |
+| Job | F52–F55 | Done: Validate-Job, Create-Job + Send-Document, progress, Cancel-Job, paper/jam shown while waiting. |
+| Preview of print effects | F51 | Not started (needs the own preview, M6). |
+| Raster | §7.1 | PWG raster sRGB/sGray 8-bit at 300 dpi, written to a temp file and then sent. PCLm and streaming: later. |
