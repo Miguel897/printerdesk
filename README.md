@@ -46,19 +46,19 @@ Produces `publish/PrinterDesk.exe` (~64 MB, self-contained). Copy it to any Wind
 
 The version comes from the latest `vX.Y.Z` git tag ([MinVer](https://github.com/adamralph/minver));
 there is no version number in the project files. Builds between tags are pre-releases such as
-`1.0.1-alpha.0.3`.
+`0.3.1-alpha.0.3`.
 
 Every user-visible change adds a line under `## [Unreleased]` in [CHANGELOG.md](CHANGELOG.md), in the
 same PR. To release:
 
-1. In a PR, rename `## [Unreleased]` to `## [1.1.0] - YYYY-MM-DD` and add a new empty `## [Unreleased]`
+1. In a PR, rename `## [Unreleased]` to `## [0.3.0] - YYYY-MM-DD` and add a new empty `## [Unreleased]`
    above it. Merge it.
 2. Tag the merge commit on `main` and push the tag:
 
    ```powershell
    git switch main; git pull
-   git tag -a v1.1.0 -m "PrinterDesk 1.1.0"
-   git push origin v1.1.0
+   git tag -a v0.3.0 -m "PrinterDesk 0.3.0"
+   git push origin v0.3.0
    ```
 
 The [Release workflow](.github/workflows/release.yml) tests, builds and attaches `PrinterDesk.exe`, using

@@ -3,15 +3,19 @@
 All notable changes to PrinterDesk (formerly ScanDesk) are listed here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow
 [Semantic Versioning](https://semver.org/). Each release on GitHub shows its section of this file.
+Versions stay below 1.0.0 while the app is still changing quickly; 0.1.0 and 0.2.0 were first
+published as 1.0.0 and 1.1.0.
 
 ## [Unreleased]
+
+## [0.3.0] - 2026-10-18
 
 ### Changed
 
 - Renamed from ScanDesk to **PrinterDesk**, ahead of adding printing. The exe is now `PrinterDesk.exe`;
   settings and unsaved pages from ScanDesk are moved over on first start.
 
-## [1.1.0] - 2026-10-17
+## [0.2.0] - 2026-10-17
 
 ### Added
 
@@ -29,7 +33,7 @@ All notable changes to PrinterDesk (formerly ScanDesk) are listed here. The form
 - Updated the bundled `System.Security.Cryptography.Pkcs` library to 10.0.13
   (GHSA-846f-f764-76mx, GHSA-2fmv-rv2c-59x7).
 
-## [1.0.0] - 2026-10-12
+## [0.1.0] - 2026-10-12
 
 First release.
 
