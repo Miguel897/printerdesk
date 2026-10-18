@@ -61,6 +61,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         SelectedDpi = _preferredDpi;
         _loadingOptions = false;
 
+        Print = new PrintViewModel(dialogs, _settings, SaveSettings, () => Pages.Select(p => p.Page).ToList());
+
         Pages.CollectionChanged += OnPagesChanged;
         _statusTimer.Tick += async (_, _) => await RefreshStatusAsync();
         _elapsedTimer.Tick += (_, _) => UpdateElapsed();
@@ -70,6 +72,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             UpdatePreview();
         };
     }
+
+    public PrintViewModel Print { get; }
 
     public ObservableCollection<DiscoveredScanner> Scanners { get; } = [];
 
@@ -237,6 +241,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         IsConnected = false;
         HasFeeder = false;
         StatusText = $"Connecting to {scanner.BaseUri.Host}…";
+        Print.Disconnect();
 
         var client = new EsclClient(scanner.BaseUri);
         try
@@ -259,6 +264,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             UpdateResolutions();
             await RefreshStatusAsync();
             _statusTimer.Start();
+            _ = Print.ConnectAsync(scanner.BaseUri.Host);
         }
         catch (Exception ex) when (ex is EsclException or XmlException or FormatException)
         {
@@ -613,6 +619,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         _isDirty = Pages.Count > 0;
         HasPages = Pages.Count > 0;
         PageCountText = Pages.Count == 0 ? "No pages" : Plural(Pages.Count, "page");
+        Print.PagesChanged(Pages.Count);
         SavedMessage = null;
         TrySaveSession();
 
@@ -782,11 +789,13 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     /// <summary>Returns false to keep the window open. Unsaved pages stay in the session and are offered next start.</summary>
     public bool ConfirmClose()
     {
-        if (!IsScanning)
+        if (!IsScanning && !Print.IsPrinting)
             return true;
-        if (!_dialogs.Confirm("A scan is in progress. Cancel it and close PrinterDesk?", "Close"))
+        var job = IsScanning ? "A scan" : "A print job";
+        if (!_dialogs.Confirm($"{job} is in progress. Cancel it and close PrinterDesk?", "Close"))
             return false;
         _scanCts?.Cancel();
+        Print.CancelIfPrinting();
         return true;
     }
 
@@ -797,6 +806,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         _previewTimer.Stop();
         _scanCts?.Cancel();
         _client?.Dispose();
+        Print.Dispose();
     }
 
     private static string Plural(int count, string word) => count == 1 ? $"1 {word}" : $"{count} {word}s";

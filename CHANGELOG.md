@@ -8,6 +8,13 @@ published as 1.0.0 and 1.1.0.
 
 ## [Unreleased]
 
+### Added
+
+- **Printing** (Print tab, Ctrl+P): print the scanned document on the printer of the same device over the
+  network (IPP), no driver needed. Copies, page range, color or black & white, one-sided or two-sided
+  (book or flip-up), orientation (landscape pages are turned to fit), paper size and quality.
+- Printer status and ink levels in the Print tab; print progress, paper or jam problems, and Cancel.
+
 ## [0.3.0] - 2026-10-18
 
 ### Changed

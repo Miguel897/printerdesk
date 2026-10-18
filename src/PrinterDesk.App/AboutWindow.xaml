@@ -19,7 +19,7 @@
 
         <TextBlock Text="Scan from network scanners (eSCL / AirScan) to PDF or JPEG." Margin="0,16,0,0" TextWrapping="Wrap" />
         <TextBlock Margin="0,8,0,0" TextWrapping="Wrap" Foreground="{StaticResource Muted}"
-                   Text="No telemetry, no account. PrinterDesk only talks to scanners on your local network; your scans never leave this PC." />
+                   Text="No telemetry, no account. PrinterDesk only talks to the scanner and printer on your local network; your documents never leave this PC except to be printed." />
         <TextBlock x:Name="CopyrightText" Margin="0,8,0,0" TextWrapping="Wrap" Foreground="{StaticResource Muted}" />
 
         <WrapPanel Margin="0,14,0,0">

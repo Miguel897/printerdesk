@@ -1,18 +1,21 @@
 # PrinterDesk
 
-Windows desktop app for your network printer: scan documents from network scanners that support
-**eSCL** (AirScan / Mopria), such as the HP ENVY 6400 series. No HP software or scanner driver needed.
+Windows desktop app for your network printer: scan from scanners that support **eSCL** (AirScan /
+Mopria) and print over **IPP** (IPP Everywhere / AirPrint / Mopria), on all-in-ones such as the
+HP ENVY 6400 series. No HP software, scanner driver or printer driver needed.
 
 - Flatbed and document feeder (all pages of a feeder batch)
 - Live PDF preview, page thumbnails, reorder (drag & drop), rotate, delete
 - Manual two-sided scanning for feeders without duplex
 - Save as PDF (JPEGs embedded without recompression) or JPEG files
+- **Print** the document (Ctrl+P): color or black & white, two-sided, orientation, paper size, quality,
+  copies and page range; printer status and ink levels
 - Unsaved pages survive a crash or close and are offered on the next start
 
-Printing (color, two-sided, rotation) is planned: see [docs/PRD-print.md](docs/PRD-print.md).
 Formerly **ScanDesk**: settings and unsaved pages are moved over automatically on first start.
 
-See [docs/PRD.md](docs/PRD.md) for requirements and design.
+See [docs/PRD.md](docs/PRD.md) (scanning) and [docs/PRD-print.md](docs/PRD-print.md) (printing) for
+requirements and design.
 
 ## Download
 
@@ -73,10 +76,10 @@ version does not match the tag.
 
 ## Privacy
 
-PrinterDesk has no telemetry and needs no account. It only talks to scanners on your local network
-(mDNS discovery and eSCL over HTTP) and makes no internet connections of its own. Your scans never
-leave your PC. The PDF preview uses the Microsoft Edge WebView2 Runtime that comes with Windows, which
-Windows keeps up to date. The only files PrinterDesk writes besides your scans are listed below.
+PrinterDesk has no telemetry and needs no account. It only talks to the scanner and printer on your
+local network (mDNS discovery, eSCL and IPP over HTTP) and makes no internet connections of its own.
+Your documents never leave your PC, except to the printer when you print them. The PDF preview uses
+the Microsoft Edge WebView2 Runtime that comes with Windows, which Windows keeps up to date. The only files PrinterDesk writes besides your scans are listed below.
 
 ## Where data is stored
 
@@ -86,6 +89,7 @@ Windows keeps up to date. The only files PrinterDesk writes besides your scans a
 | Pages of the current document | `%LOCALAPPDATA%\PrinterDesk\Session` |
 | PDF preview browser profile | `%LOCALAPPDATA%\PrinterDesk\WebView2` |
 | Log (7 days) | `%LOCALAPPDATA%\PrinterDesk\logs` |
+| Print job being sent (deleted when done) | `%TEMP%\PrinterDesk` |
 
 ## Project layout
 
